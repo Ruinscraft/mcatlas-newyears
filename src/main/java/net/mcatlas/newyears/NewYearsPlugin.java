@@ -45,23 +45,27 @@ public class NewYearsPlugin extends JavaPlugin {
 		this.getServer().getScheduler().runTaskTimer(this, () -> {
 			LocalDateTime now = LocalDateTime.now();
 			
-			if (now.getMinute() == 59 && now.getSecond() >= 49) {
-				if (now.getSecond() == 49) {
-					CompletableFuture.runAsync(() -> {
-						// is this safe?
-						this.newYearsTowns = getTownsForNewYears();
-					});
-				}
-
-				if (!newYearsTowns.isEmpty() && now.getSecond() >= 50) {
-					Bukkit.broadcastMessage(ChatColor.BLUE + "" + (60 - now.getSecond()) + "...");
-				}
-			}
-			
-			if (!newYearsTowns.isEmpty() && now.getMinute() == 00 && now.getSecond() == 00) {
-				handleNewYear();
-			}
+			checkTime(now);
 		}, 0, 20 * 1);
+	}
+
+	public void checkTime(LocalDateTime time) {
+		if (time.getMinute() == 59 && time.getSecond() >= 49) {
+			if (time.getSecond() == 49) {
+				CompletableFuture.runAsync(() -> {
+					// is this safe?
+					this.newYearsTowns = getTownsForNewYears();
+				});
+			}
+
+			if (!newYearsTowns.isEmpty() && time.getSecond() >= 50) {
+				Bukkit.broadcastMessage(ChatColor.BLUE + "" + (60 - time.getSecond()) + "...");
+			}
+		}
+		
+		if (!newYearsTowns.isEmpty() && time.getMinute() == 00 && time.getSecond() == 00) {
+			handleNewYear();
+		}
 	}
 
 	public List<Town> getTownsForNewYears() {
