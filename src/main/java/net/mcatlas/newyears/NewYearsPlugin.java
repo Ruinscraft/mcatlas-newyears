@@ -8,8 +8,15 @@ import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.palmergames.bukkit.towny.TownyAPI;
@@ -133,6 +140,34 @@ public class NewYearsPlugin extends JavaPlugin {
 	public void newYearsAction(Town town) {
 		// special large fireworks come out of the town spawn
 		// rain some gold/items in the general vicinity?
+		if (!town.hasSpawn()) return;
+
+		Location townSpawn = null;
+		try {
+			townSpawn = town.getSpawn();
+		} catch (TownyException e) {
+			e.printStackTrace();
+		}
+		
+		Location aboveTownSpawn = townSpawn.clone().add(0, 20, 0);
+		if (aboveTownSpawn.getBlock().getType() != Material.AIR) {
+			aboveTownSpawn = townSpawn.clone().add(0, 40, 0);
+			if (aboveTownSpawn.getBlock().getType() != Material.AIR) return;
+		}
+		Firework firework = (Firework) aboveTownSpawn.getWorld().spawnEntity(aboveTownSpawn, EntityType.FIREWORK);
+		FireworkMeta fireworkMeta = firework.getFireworkMeta();
+
+		fireworkMeta.setPower(6);
+		fireworkMeta.addEffect(FireworkEffect.builder().withColor(Color.AQUA)
+				.flicker(true).with(Type.BALL_LARGE).build());
+
+		firework.setFireworkMeta(fireworkMeta);
+
+		int amntResidents = town.getResidents().size();
+		if (amntResidents < 20) amntResidents = 20;
+		for (int i = 0; i < amntResidents; i++) {
+			// spawn some gold in the sky
+		}
 	}
 
 	public void newYearsAction(Player player) {
