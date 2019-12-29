@@ -16,6 +16,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -164,15 +165,27 @@ public class NewYearsPlugin extends JavaPlugin {
 		firework.setFireworkMeta(fireworkMeta);
 
 		int amntResidents = town.getResidents().size();
-		if (amntResidents < 20) amntResidents = 20;
+		if (amntResidents < 25) amntResidents = 25;
 		for (int i = 0; i < amntResidents; i++) {
-			// spawn some gold in the sky
+			// spawn some gold in the sky (within 30 blocks of spawn)
+			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 60, 0, (Math.random() - .5) * 60);
+			goldSpawnLocation.getWorld().dropItem(goldSpawnLocation, new ItemStack(Material.GOLD_INGOT, 1));
 		}
 	}
 
 	public void newYearsAction(Player player) {
 		// fireworks come out of the player or something
 		// maybe rain some items too
+		Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
+		FireworkMeta fireworkMeta = firework.getFireworkMeta();
+
+		fireworkMeta.setPower(6);
+		fireworkMeta.addEffect(FireworkEffect.builder().withColor(Color.AQUA)
+				.flicker(true).with(Type.BALL_LARGE).build());
+
+		firework.setFireworkMeta(fireworkMeta);
+
+		player.getWorld().dropItem(player.getLocation().clone().add(0, 10, 0), new ItemStack(Material.GOLD_BLOCK, 1));
 	}
 
 	public class Coordinate {
