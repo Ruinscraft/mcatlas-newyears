@@ -41,6 +41,8 @@ public class NewYearsPlugin extends JavaPlugin {
 	private LocalDateTime afterNewYears = LocalDateTime.of(2020, 01, 01, 00, 00, 10);
 
 	private String mostRecentTimeZone;
+	private int goldDropped = 0;
+	private int specialItem = 0;
 
 	@Override
 	public void onEnable() {
@@ -147,7 +149,7 @@ public class NewYearsPlugin extends JavaPlugin {
 		}
 
 		if (mostRecentTimeZone == null) mostRecentTimeZone = "some time zone";
-		Bukkit.broadcastMessage(ChatColor.BLUE + "" + ChatColor.BOLD + "Happy New Year in " 
+		Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "Happy New Year in " 
 				+ mostRecentTimeZone + " to " + newYearsTowns.size() 
 				+ " towns and " + newYearsPlayers.size() + " players!");
 
@@ -158,7 +160,19 @@ public class NewYearsPlugin extends JavaPlugin {
 			newYearsAction(player);
 		}
 
+		if (this.specialItem > 1) {
+			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold and " 
+					+ specialItem + " special items have been dropped.");
+		} else if (this.specialItem == 1) {
+			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold and " 
+					+ specialItem + " special item have been dropped.");
+		} else {
+			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold has been dropped.");
+		}
+
 		this.newYearsTowns.clear();
+		this.goldDropped = 0;
+		this.specialItem = 0;
 	}
 
 	public void newYearsAction(Town town) {
@@ -199,13 +213,16 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		if (Math.random() < .05) {
 			aboveTownSpawn.getWorld().dropItem(aboveTownSpawn, new ItemStack(Material.NETHER_STAR, 1));
+			this.specialItem++;
 		}
 
-		int amntResidents = town.getResidents().size();
-		if (amntResidents < 25) amntResidents = 25;
+		int amntResidents = town.getResidents().size() * 2;
+		if (amntResidents < 35) amntResidents = 35;
+		goldDropped = goldDropped + amntResidents;
+
 		for (int i = 0; i < amntResidents; i++) {
-			// spawn some gold in the sky (within 30 blocks of spawn)
-			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 60, 0, (Math.random() - .5) * 60);
+			// spawn some gold in the sky (within ~30 blocks of spawn)
+			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 75, 0, (Math.random() - .5) * 75);
 			goldSpawnLocation.getWorld().dropItem(goldSpawnLocation, new ItemStack(Material.GOLD_INGOT, 1));
 		}
 	}
@@ -221,6 +238,8 @@ public class NewYearsPlugin extends JavaPlugin {
 				.flicker(true).with(Type.BURST).build());
 
 		firework.setFireworkMeta(fireworkMeta);
+
+		goldDropped = goldDropped + 3;
 
 		player.getWorld().dropItem(player.getLocation().clone().add(0, 10, 0), new ItemStack(Material.GOLD_INGOT, 3));
 	}
