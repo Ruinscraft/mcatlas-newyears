@@ -2,8 +2,10 @@ package net.mcatlas.newyears;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 import org.bukkit.Bukkit;
@@ -34,9 +36,11 @@ public class NewYearsPlugin extends JavaPlugin {
 
 	private double scaling = 120;
 
-	private LocalDateTime beforeNewYears = LocalDateTime.of(2019, 12, 31, 23, 59, 49);
+	private LocalDateTime beforeNewYears = LocalDateTime.of(2019, 12, 31, 23, 59, 40);
 	private LocalDateTime newYears = LocalDateTime.of(2020, 1, 01, 00, 00, 00);
-	private LocalDateTime afterNewYears = LocalDateTime.of(2020, 1, 01, 00, 00, 10);
+	private LocalDateTime afterNewYears = LocalDateTime.of(2020, 01, 01, 00, 00, 10);
+
+	private String mostRecentTimeZone;
 
 	@Override
 	public void onEnable() {
@@ -45,20 +49,20 @@ public class NewYearsPlugin extends JavaPlugin {
 			this.getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
-		
+
 		engine = TimeZoneEngine.initialize();
 
 		this.newYearsTowns = new ArrayList<Town>();
 
 		this.getServer().getScheduler().runTaskTimer(this, () -> {
 			LocalDateTime now = LocalDateTime.now();
-			
+
 			checkTime(now);
 		}, 0, 20 * 1);
 	}
 
 	public void checkTime(LocalDateTime time) {
-		if (time.getMinute() == 59 && time.getSecond() >= 49) {
+		if (time.getMinute() == 59 && time.getSecond() >= 45) {
 			if (time.getSecond() == 49) {
 				CompletableFuture.runAsync(() -> {
 					// is this safe?
@@ -67,10 +71,10 @@ public class NewYearsPlugin extends JavaPlugin {
 			}
 
 			if (!newYearsTowns.isEmpty() && time.getSecond() >= 50) {
-				Bukkit.broadcastMessage(ChatColor.BLUE + "" + (60 - time.getSecond()) + "...");
+				System.out.println(ChatColor.BLUE + "" + (60 - time.getSecond()) + "...");
 			}
 		}
-		
+
 		if (!newYearsTowns.isEmpty() && time.getMinute() == 00 && time.getSecond() == 00) {
 			handleNewYear();
 		}
@@ -83,6 +87,7 @@ public class NewYearsPlugin extends JavaPlugin {
 			try {
 				Location spawn = town.getSpawn();
 				if (isNearNewYears(spawn)) {
+					if (!town.getName().equals("Fresno")) continue;
 					towns.add(town);
 				}
 			} catch (TownyException e) {
@@ -100,17 +105,34 @@ public class NewYearsPlugin extends JavaPlugin {
 		return new Coordinate(x, y);
 	}
 
+	public ZoneId getTimeZoneFromMC(Location location) {
+		return getTimeZoneFromMC(location.getBlockX(), location.getBlockZ());
+	}
+
+	public ZoneId getTimeZoneFromMC(int mcX, int mcZ) {
+		Coordinate coord = getLifeFromMC(mcX, mcZ);
+		List<ZoneId> zones = engine.queryAll(coord.lat, coord.lon);
+		if (zones.isEmpty()) return null;
+		ZoneId first = zones.get(0);
+		return first;
+	}
+
+	public String getZoneName(ZoneId zone) {
+		return zone.getDisplayName(TextStyle.FULL, Locale.US);
+	}
+
 	public boolean isNearNewYears(Location location) {
 		return isNearNewYears(location.getBlockX(), location.getBlockZ());
 	}
 
 	public boolean isNearNewYears(int mcX, int mcZ) {
-		Coordinate coord = getLifeFromMC(mcX, mcZ);
-		List<ZoneId> zones = engine.queryAll(coord.lat, coord.lon);
-		ZoneId first = zones.get(0);
-		LocalDateTime localNow = LocalDateTime.now(first);
+		ZoneId zone = getTimeZoneFromMC(mcX, mcZ);
+		if (zone == null) return false;
+
+		LocalDateTime localNow = LocalDateTime.now(zone);
 		if (localNow.isAfter(beforeNewYears) || localNow.isEqual(beforeNewYears)) {
 			if (localNow.isBefore(afterNewYears) || localNow.isEqual(afterNewYears)) {
+				mostRecentTimeZone = getZoneName(zone);
 				return true;
 			}
 		}
@@ -125,8 +147,10 @@ public class NewYearsPlugin extends JavaPlugin {
 			}
 		}
 
-		Bukkit.broadcastMessage(ChatColor.BLUE + "" + ChatColor.BOLD + "Happy New Year to " + 
-				newYearsTowns.size() + " towns and " + newYearsPlayers.size() + " players!");
+		if (mostRecentTimeZone == null) mostRecentTimeZone = "some time zone";
+		System.out.println(ChatColor.BLUE + "" + ChatColor.BOLD + "Happy New Year in " 
+				+ mostRecentTimeZone + " to " + newYearsTowns.size() 
+				+ " towns and " + newYearsPlayers.size() + " players!");
 
 		for (Town town : this.newYearsTowns) {
 			newYearsAction(town);
@@ -149,20 +173,30 @@ public class NewYearsPlugin extends JavaPlugin {
 		} catch (TownyException e) {
 			e.printStackTrace();
 		}
-		
-		Location aboveTownSpawn = townSpawn.clone().add(0, 20, 0);
-		if (aboveTownSpawn.getBlock().getType() != Material.AIR) {
-			aboveTownSpawn = townSpawn.clone().add(0, 40, 0);
-			if (aboveTownSpawn.getBlock().getType() != Material.AIR) return;
-		}
+
+		Location aboveTownSpawn = townSpawn.clone().add(0, 10, 0);
+
+		// first firework
+
 		Firework firework = (Firework) aboveTownSpawn.getWorld().spawnEntity(aboveTownSpawn, EntityType.FIREWORK);
 		FireworkMeta fireworkMeta = firework.getFireworkMeta();
 
-		fireworkMeta.setPower(6);
-		fireworkMeta.addEffect(FireworkEffect.builder().withColor(Color.AQUA)
+		fireworkMeta.setPower(3);
+		fireworkMeta.addEffect(FireworkEffect.builder().withColor(Color.MAROON)
 				.flicker(true).with(Type.BALL_LARGE).build());
 
 		firework.setFireworkMeta(fireworkMeta);
+
+		// second firework
+
+		Firework fireworkTwo = (Firework) aboveTownSpawn.getWorld().spawnEntity(aboveTownSpawn, EntityType.FIREWORK);
+		FireworkMeta fireworkMetaTwo = firework.getFireworkMeta();
+
+		fireworkMetaTwo.setPower(2);
+		fireworkMetaTwo.addEffect(FireworkEffect.builder().withColor(Color.ORANGE)
+				.flicker(true).with(Type.STAR).build());
+
+		fireworkTwo.setFireworkMeta(fireworkMetaTwo);
 
 		if (Math.random() < .05) {
 			aboveTownSpawn.getWorld().dropItem(aboveTownSpawn, new ItemStack(Material.NETHER_STAR, 1));
@@ -183,13 +217,13 @@ public class NewYearsPlugin extends JavaPlugin {
 		Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
 		FireworkMeta fireworkMeta = firework.getFireworkMeta();
 
-		fireworkMeta.setPower(6);
-		fireworkMeta.addEffect(FireworkEffect.builder().withColor(Color.AQUA)
-				.flicker(true).with(Type.BALL_LARGE).build());
+		fireworkMeta.setPower(2);
+		fireworkMeta.addEffect(FireworkEffect.builder().withColor(Color.GREEN)
+				.flicker(true).with(Type.BURST).build());
 
 		firework.setFireworkMeta(fireworkMeta);
 
-		player.getWorld().dropItem(player.getLocation().clone().add(0, 10, 0), new ItemStack(Material.GOLD_BLOCK, 1));
+		player.getWorld().dropItem(player.getLocation().clone().add(0, 10, 0), new ItemStack(Material.GOLD_INGOT, 3));
 	}
 
 	public class Coordinate {

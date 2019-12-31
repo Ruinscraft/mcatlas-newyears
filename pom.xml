@@ -6,7 +6,7 @@
 	<artifactId>newyears</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>Powder</name>
+	<name>mcatlas-newyears</name>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -16,13 +16,12 @@
 
 	<repositories>
 		<repository>
-			<id>spigot-repo</id>
-			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+			<id>maven-central</id>
+			<url>https://repo.maven.apache.org/maven2/</url>
 		</repository>
 		<repository>
-			<id>maven-central</id>
-			<name>MavenRepo</name>
-			<url>https://repo.maven.apache.org/maven2/</url>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
 			<id>github-Towny</id>
@@ -32,10 +31,10 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.13.2-R0.1-SNAPSHOT</version>
-			<scope>provided</scope>
+			<groupId>net.iakovlev</groupId>
+			<artifactId>timeshape</artifactId>
+			<version>2019b.8</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.palmergames.bukkit.towny</groupId>
@@ -44,13 +43,29 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>net.iakovlev</groupId>
-			<artifactId>timeshape</artifactId>
-			<version>2019b.8</version>
+			<groupId>org.bukkit</groupId>
+			<artifactId>bukkit</artifactId>
+			<version>1.13.2-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
@@ -68,7 +83,7 @@
 				</excludes>
 			</resource>
 		</resources>
-		<finalName>mcatlas-helpers</finalName>
+		<finalName>mcatlas-newyears</finalName>
 	</build>
 
 </project>

@@ -1,0 +1,5 @@
+name: ${name}
+version: ${project.version}
+main: ${mainClass}
+authors: [StupidDrew9]
+api-version: 1.13
