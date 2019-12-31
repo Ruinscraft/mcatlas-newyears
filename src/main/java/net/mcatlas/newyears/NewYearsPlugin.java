@@ -162,12 +162,15 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		if (this.specialItem > 1) {
 			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold and " 
-					+ specialItem + " special items have been dropped.");
+					+ specialItem + " special items have been dropped "
+					+ "around those Towns and players");
 		} else if (this.specialItem == 1) {
 			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold and " 
-					+ specialItem + " special item have been dropped.");
+					+ specialItem + " special item have been dropped "
+					+ "around those Towns and players.");
 		} else {
-			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold has been dropped.");
+			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold has been dropped "
+					+ "around those Towns and players.");
 		}
 
 		this.newYearsTowns.clear();
@@ -217,12 +220,12 @@ public class NewYearsPlugin extends JavaPlugin {
 		}
 
 		int amntResidents = town.getResidents().size() * 2;
-		if (amntResidents < 35) amntResidents = 35;
+		if (amntResidents < 30) amntResidents = 30;
 		goldDropped = goldDropped + amntResidents;
 
 		for (int i = 0; i < amntResidents; i++) {
 			// spawn some gold in the sky (within ~30 blocks of spawn)
-			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 75, 0, (Math.random() - .5) * 75);
+			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 65, 0, (Math.random() - .5) * 65);
 			goldSpawnLocation.getWorld().dropItem(goldSpawnLocation, new ItemStack(Material.GOLD_INGOT, 1));
 		}
 	}
