@@ -239,9 +239,9 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		firework.setFireworkMeta(fireworkMeta);
 
-		goldDropped = goldDropped + 3;
+		goldDropped = goldDropped + 9;
 
-		player.getWorld().dropItem(player.getLocation().clone().add(0, 10, 0), new ItemStack(Material.GOLD_INGOT, 3));
+		player.getWorld().dropItem(player.getLocation().clone().add(0, 10, 0), new ItemStack(Material.GOLD_BLOCK, 1));
 	}
 
 	public class Coordinate {
