@@ -164,8 +164,12 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		firework.setFireworkMeta(fireworkMeta);
 
+		if (Math.random() < .05) {
+			aboveTownSpawn.getWorld().dropItem(aboveTownSpawn, new ItemStack(Material.NETHER_STAR, 1));
+		}
+
 		int amntResidents = town.getResidents().size();
-		if (amntResidents < 25) amntResidents = 25;
+		if (amntResidents < 20) amntResidents = 20;
 		for (int i = 0; i < amntResidents; i++) {
 			// spawn some gold in the sky (within 30 blocks of spawn)
 			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 60, 0, (Math.random() - .5) * 60);
@@ -192,9 +196,9 @@ public class NewYearsPlugin extends JavaPlugin {
 		int lon; // longitude
 		int lat; // latitude
 
-		public Coordinate(int x, int y) {
-			this.lon = x;
-			this.lat = y;
+		public Coordinate(int lon, int lat) {
+			this.lon = lon;
+			this.lat = lat;
 		}
 	}
 
