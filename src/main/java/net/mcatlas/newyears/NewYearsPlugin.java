@@ -214,13 +214,14 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		fireworkTwo.setFireworkMeta(fireworkMetaTwo);
 
-		if (Math.random() < .05) {
+		if (Math.random() < .03) {
 			aboveTownSpawn.getWorld().dropItem(aboveTownSpawn, new ItemStack(Material.NETHER_STAR, 1));
 			this.specialItem++;
 		}
 
 		int amntResidents = town.getResidents().size() * 2;
 		if (amntResidents < 30) amntResidents = 30;
+		if (!town.isPublic()) amntResidents = amntResidents * 2;
 		goldDropped = goldDropped + amntResidents;
 
 		for (int i = 0; i < amntResidents; i++) {
