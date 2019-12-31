@@ -62,8 +62,8 @@ public class NewYearsPlugin extends JavaPlugin {
 	}
 
 	public void checkTime(LocalDateTime time) {
-		if (time.getMinute() == 59 && time.getSecond() >= 45) {
-			if (time.getSecond() == 49) {
+		if (time.getMinute() == 59 && time.getSecond() >= 40) {
+			if (time.getSecond() == 45) {
 				CompletableFuture.runAsync(() -> {
 					// is this safe?
 					this.newYearsTowns = getTownsForNewYears();
