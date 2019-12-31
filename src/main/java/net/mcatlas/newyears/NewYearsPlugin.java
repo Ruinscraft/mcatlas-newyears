@@ -71,7 +71,7 @@ public class NewYearsPlugin extends JavaPlugin {
 			}
 
 			if (!newYearsTowns.isEmpty() && time.getSecond() >= 50) {
-				System.out.println(ChatColor.BLUE + "" + (60 - time.getSecond()) + "...");
+				Bukkit.broadcastMessage(ChatColor.BLUE + "" + (60 - time.getSecond()) + "...");
 			}
 		}
 
@@ -87,7 +87,6 @@ public class NewYearsPlugin extends JavaPlugin {
 			try {
 				Location spawn = town.getSpawn();
 				if (isNearNewYears(spawn)) {
-					if (!town.getName().equals("Fresno")) continue;
 					towns.add(town);
 				}
 			} catch (TownyException e) {
@@ -148,7 +147,7 @@ public class NewYearsPlugin extends JavaPlugin {
 		}
 
 		if (mostRecentTimeZone == null) mostRecentTimeZone = "some time zone";
-		System.out.println(ChatColor.BLUE + "" + ChatColor.BOLD + "Happy New Year in " 
+		Bukkit.broadcastMessage(ChatColor.BLUE + "" + ChatColor.BOLD + "Happy New Year in " 
 				+ mostRecentTimeZone + " to " + newYearsTowns.size() 
 				+ " towns and " + newYearsPlayers.size() + " players!");
 
@@ -203,7 +202,7 @@ public class NewYearsPlugin extends JavaPlugin {
 		}
 
 		int amntResidents = town.getResidents().size();
-		if (amntResidents < 20) amntResidents = 20;
+		if (amntResidents < 25) amntResidents = 25;
 		for (int i = 0; i < amntResidents; i++) {
 			// spawn some gold in the sky (within 30 blocks of spawn)
 			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 60, 0, (Math.random() - .5) * 60);
