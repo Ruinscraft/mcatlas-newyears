@@ -44,6 +44,9 @@ public class NewYearsPlugin extends JavaPlugin {
 	private int goldDropped = 0;
 	private int specialItem = 0;
 
+	private boolean newYearTownsLoaded;
+	private boolean newYearHandled;
+
 	@Override
 	public void onEnable() {
 		if (this.getServer().getPluginManager().getPlugin("Towny") == null) {
@@ -65,19 +68,23 @@ public class NewYearsPlugin extends JavaPlugin {
 
 	public void checkTime(LocalDateTime time) {
 		if (time.getMinute() == 59 && time.getSecond() >= 40) {
-			if (time.getSecond() == 45) {
+			this.newYearHandled = false;
+			if (time.getSecond() == 45 || time.getSecond() == 46 && !newYearTownsLoaded) {
 				CompletableFuture.runAsync(() -> {
 					// is this safe?
+					this.newYearTownsLoaded = true;
 					this.newYearsTowns = getTownsForNewYears();
 				});
 			}
 
 			if (!newYearsTowns.isEmpty() && time.getSecond() >= 50) {
-				Bukkit.broadcastMessage(ChatColor.BLUE + "" + (60 - time.getSecond()) + "...");
+				Bukkit.broadcastMessage(ChatColor.GOLD + "" + (60 - time.getSecond()) + "...");
 			}
 		}
 
-		if (!newYearsTowns.isEmpty() && time.getMinute() == 00 && time.getSecond() == 00) {
+		if (!newYearsTowns.isEmpty() && time.getMinute() == 00 && time.getSecond() >= 00 && !newYearHandled) {
+			this.newYearHandled = true;
+			this.newYearTownsLoaded = false;
 			handleNewYear();
 		}
 	}
@@ -219,8 +226,7 @@ public class NewYearsPlugin extends JavaPlugin {
 			this.specialItem++;
 		}
 
-		int amntResidents = town.getResidents().size() * 2;
-		if (amntResidents < 30) amntResidents = 30;
+		int amntResidents = town.getResidents().size() + 30;
 		if (!town.isPublic()) amntResidents = amntResidents * 2;
 		goldDropped = goldDropped + amntResidents;
 
