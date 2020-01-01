@@ -30,20 +30,27 @@ import net.iakovlev.timeshape.TimeZoneEngine;
 
 public class NewYearsPlugin extends JavaPlugin {
 
+	// engine used for time zone checking
 	private TimeZoneEngine engine;
 
+	// towns to be used in new years celebration
 	private List<Town> newYearsTowns;
 
+	// scaling of the map; used to translate from MC coords to irl coords
 	private double scaling = 120;
 
+	// dates before and after new years
 	private LocalDateTime beforeNewYears = LocalDateTime.of(2019, 12, 31, 23, 59, 40);
-	private LocalDateTime newYears = LocalDateTime.of(2020, 1, 01, 00, 00, 00);
 	private LocalDateTime afterNewYears = LocalDateTime.of(2020, 01, 01, 00, 00, 10);
 
+	// ghetto string used to say which time zone is celebrating new years
 	private String mostRecentTimeZone;
+
+	// amnt of each item dropped to broadcast on new years
 	private int goldDropped = 0;
 	private int specialItem = 0;
 
+	// ghetto booleans to ensure that stuff works (still doesn't always work)
 	private boolean newYearTownsLoaded;
 	private boolean newYearHandled;
 
@@ -59,6 +66,7 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		this.newYearsTowns = new ArrayList<Town>();
 
+		// runs every second
 		this.getServer().getScheduler().runTaskTimer(this, () -> {
 			LocalDateTime now = LocalDateTime.now();
 
@@ -66,22 +74,27 @@ public class NewYearsPlugin extends JavaPlugin {
 		}, 0, 20 * 1);
 	}
 
+	// checks if it's time for new years stuff
 	public void checkTime(LocalDateTime time) {
 		if (time.getMinute() == 59 && time.getSecond() >= 40) {
 			this.newYearHandled = false;
+			// if towns not loaded and it's within a few seconds, do this stuff
 			if (time.getSecond() == 45 || time.getSecond() == 46 && !newYearTownsLoaded) {
 				CompletableFuture.runAsync(() -> {
 					// is this safe?
+					// loads the towns used for new years
 					this.newYearTownsLoaded = true;
 					this.newYearsTowns = getTownsForNewYears();
 				});
 			}
 
+			// countdown (if there's towns in the timezone)
 			if (!newYearsTowns.isEmpty() && time.getSecond() >= 50) {
 				Bukkit.broadcastMessage(ChatColor.GOLD + "" + (60 - time.getSecond()) + "...");
 			}
 		}
 
+		// actual new years stuff
 		if (!newYearsTowns.isEmpty() && time.getMinute() == 00 && time.getSecond() >= 00 && !newYearHandled) {
 			this.newYearHandled = true;
 			this.newYearTownsLoaded = false;
@@ -89,6 +102,7 @@ public class NewYearsPlugin extends JavaPlugin {
 		}
 	}
 
+	// gets the towns that celebrate new years this time
 	public List<Town> getTownsForNewYears() {
 		List<Town> towns = new ArrayList<Town>();
 
@@ -117,6 +131,7 @@ public class NewYearsPlugin extends JavaPlugin {
 		return getTimeZoneFromMC(location.getBlockX(), location.getBlockZ());
 	}
 
+	// returns the time zone for the mc coord
 	public ZoneId getTimeZoneFromMC(int mcX, int mcZ) {
 		Coordinate coord = getLifeFromMC(mcX, mcZ);
 		List<ZoneId> zones = engine.queryAll(coord.lat, coord.lon);
@@ -125,6 +140,7 @@ public class NewYearsPlugin extends JavaPlugin {
 		return first;
 	}
 
+	// nice name for the timezone
 	public String getZoneName(ZoneId zone) {
 		return zone.getDisplayName(TextStyle.FULL, Locale.US);
 	}
@@ -133,6 +149,7 @@ public class NewYearsPlugin extends JavaPlugin {
 		return isNearNewYears(location.getBlockX(), location.getBlockZ());
 	}
 
+	// if it's going to be new years soon for this location
 	public boolean isNearNewYears(int mcX, int mcZ) {
 		ZoneId zone = getTimeZoneFromMC(mcX, mcZ);
 		if (zone == null) return false;
@@ -140,14 +157,16 @@ public class NewYearsPlugin extends JavaPlugin {
 		LocalDateTime localNow = LocalDateTime.now(zone);
 		if (localNow.isAfter(beforeNewYears) || localNow.isEqual(beforeNewYears)) {
 			if (localNow.isBefore(afterNewYears) || localNow.isEqual(afterNewYears)) {
-				mostRecentTimeZone = getZoneName(zone);
+				this.mostRecentTimeZone = getZoneName(zone);
 				return true;
 			}
 		}
 		return false;
 	}
 
+	// runs whenever it's a new year for the towns/players
 	public void handleNewYear() {
+		// gets players that are in the timezone celebrating new years
 		List<Player> newYearsPlayers = new ArrayList<Player>();
 		for (Player player : this.getServer().getWorlds().get(0).getPlayers()) {
 			if (isNearNewYears(player.getLocation())) {
@@ -155,11 +174,13 @@ public class NewYearsPlugin extends JavaPlugin {
 			}
 		}
 
-		if (mostRecentTimeZone == null) mostRecentTimeZone = "some time zone";
+		// main message
+		if (this.mostRecentTimeZone == null) this.mostRecentTimeZone = "some time zone";
 		Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "Happy New Year in " 
 				+ mostRecentTimeZone + " to " + newYearsTowns.size() 
 				+ " towns and " + newYearsPlayers.size() + " players!");
 
+		// does stuff for the towns and players (drops gold/fireworks)
 		for (Town town : this.newYearsTowns) {
 			newYearsAction(town);
 		}
@@ -167,6 +188,7 @@ public class NewYearsPlugin extends JavaPlugin {
 			newYearsAction(player);
 		}
 
+		// amnt of items done stuff with
 		if (this.specialItem > 1) {
 			Bukkit.broadcastMessage(ChatColor.GOLD + "" + goldDropped + " gold and " 
 					+ specialItem + " special items have been dropped "
@@ -180,14 +202,14 @@ public class NewYearsPlugin extends JavaPlugin {
 					+ "around those Towns and players.");
 		}
 
+		// clears stuff out
 		this.newYearsTowns.clear();
 		this.goldDropped = 0;
 		this.specialItem = 0;
 	}
 
+	// does new years stuff for the town
 	public void newYearsAction(Town town) {
-		// special large fireworks come out of the town spawn
-		// rain some gold/items in the general vicinity?
 		if (!town.hasSpawn()) return;
 
 		Location townSpawn = null;
@@ -221,25 +243,28 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		fireworkTwo.setFireworkMeta(fireworkMetaTwo);
 
+		// 3% chance of a nether star
 		if (Math.random() < .03) {
-			aboveTownSpawn.getWorld().dropItem(aboveTownSpawn, new ItemStack(Material.NETHER_STAR, 1));
+			townSpawn.getWorld().dropItem(townSpawn, new ItemStack(Material.NETHER_STAR, 1));
 			this.specialItem++;
 		}
 
+		// 30 + amount of residents = amount of gold dropped
+		// multiplied by 2 if town cant be teleported to
 		int amntResidents = town.getResidents().size() + 30;
 		if (!town.isPublic()) amntResidents = amntResidents * 2;
-		goldDropped = goldDropped + amntResidents;
+		this.goldDropped = this.goldDropped + amntResidents;
 
 		for (int i = 0; i < amntResidents; i++) {
-			// spawn some gold in the sky (within ~30 blocks of spawn)
+			// spawn some gold in the sky (within ~32 blocks of spawn)
 			Location goldSpawnLocation = aboveTownSpawn.clone().add((Math.random() - .5) * 65, 0, (Math.random() - .5) * 65);
 			goldSpawnLocation.getWorld().dropItem(goldSpawnLocation, new ItemStack(Material.GOLD_INGOT, 1));
 		}
 	}
 
+	// does new years stuff for the player
 	public void newYearsAction(Player player) {
-		// fireworks come out of the player or something
-		// maybe rain some items too
+		// spawn firework
 		Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation(), EntityType.FIREWORK);
 		FireworkMeta fireworkMeta = firework.getFireworkMeta();
 
@@ -249,11 +274,12 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		firework.setFireworkMeta(fireworkMeta);
 
-		goldDropped = goldDropped + 9;
-
+		// keep track of amount of gold, and drop 9 gold
+		this.goldDropped = this.goldDropped + 9;
 		player.getWorld().dropItem(player.getLocation().clone().add(0, 10, 0), new ItemStack(Material.GOLD_BLOCK, 1));
 	}
 
+	// used for translating mc coord/irl coord
 	public class Coordinate {
 		int lon; // longitude
 		int lat; // latitude
