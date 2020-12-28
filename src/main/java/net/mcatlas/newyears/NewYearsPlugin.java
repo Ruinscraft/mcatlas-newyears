@@ -1,20 +1,11 @@
 package net.mcatlas.newyears;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
+import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.exceptions.TownyException;
+import com.palmergames.bukkit.towny.object.Town;
+import net.iakovlev.timeshape.TimeZoneEngine;
+import org.bukkit.*;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -22,11 +13,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.exceptions.TownyException;
-import com.palmergames.bukkit.towny.object.Town;
-
-import net.iakovlev.timeshape.TimeZoneEngine;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 public class NewYearsPlugin extends JavaPlugin {
 
@@ -40,8 +33,8 @@ public class NewYearsPlugin extends JavaPlugin {
 	private double scaling = 120;
 
 	// dates before and after new years
-	private LocalDateTime beforeNewYears = LocalDateTime.of(2019, 12, 31, 23, 59, 40);
-	private LocalDateTime afterNewYears = LocalDateTime.of(2020, 01, 01, 00, 00, 10);
+	private LocalDateTime beforeNewYears = LocalDateTime.of(2020, 12, 31, 23, 59, 40);
+	private LocalDateTime afterNewYears = LocalDateTime.of(2021, 01, 01, 00, 00, 10);
 
 	// ghetto string used to say which time zone is celebrating new years
 	private String mostRecentTimeZone;
@@ -64,7 +57,7 @@ public class NewYearsPlugin extends JavaPlugin {
 
 		engine = TimeZoneEngine.initialize();
 
-		this.newYearsTowns = new ArrayList<Town>();
+		this.newYearsTowns = new ArrayList<>();
 
 		// runs every second
 		this.getServer().getScheduler().runTaskTimer(this, () -> {
